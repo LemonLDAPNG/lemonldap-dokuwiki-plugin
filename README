@@ -1,0 +1,54 @@
+# LemonLDAP - Dokuwiki auth plugin.
+
+You can find an up2date documentation here:
+http://wiki.lemonldap.objectweb.org/xwiki/bin/view/NG/DocAppDokuwiki
+
+The Dokuwiki must be provided by the http server wheris the lemonLDAP handler.
+
+Both files must be pushed in $DOKU_INSTALL/inc/auth/ and this line must be
+pushed at the end of $DOKU_INSTALL/conf/local.php
+
+$conf['authtype']    = 'lemonldap';
+
+For information, this can be an Apache2 lemon/doku config file:
+
+PerlRequire /var/lib/lemonldap-ng/handler/MyHandler.pm
+
+<VirtualHost *>
+    ServerName dokuwiki.sso-lemonldap.com
+    PerlOptions +GlobalRequest
+    PerlHeaderParserHandler MyHandler
+
+    <Files *.pl>
+        SetHandler perl-script
+        PerlResponseHandler ModPerl::Registry
+        PerlSendHeader  On
+    </Files>
+
+    # DocumentRoot
+    DocumentRoot /var/www/dokuwiki.sso-lemonldap.com
+
+    <Directory /var/www/dokuwiki.sso-lemonldap.com>
+        Order deny,allow
+        #Deny from all
+        Allow from all
+        Options -Indexes +FollowSymLinks +MultiViews
+    </Directory>
+
+    <Location /logout >
+            PerlHeaderParserHandler MyHandler->logout
+    </Location>
+
+
+        <IfModule mod_dir.c>
+            DirectoryIndex index.pl index.php index.html
+        </IfModule>
+
+    # Logs
+    LogLevel warn
+    ErrorLog /var/log/apache2/dokuwikisso-lemonldap.com-error.log
+    CustomLog /var/log/apache2/dokuwikisso-lemonldap.com-access.log combined
+
+
+</VirtualHost>
+
